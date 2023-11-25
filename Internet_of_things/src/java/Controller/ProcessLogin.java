@@ -30,16 +30,19 @@ public class ProcessLogin extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         boolean check = new SensorDAO().checkLogin(username, password);
         HttpSession session=request.getSession();
         if(check == true){
             session.setAttribute("login", "success");
-            request.getRequestDispatcher("home.html").forward(request, response);
+//            request.getRequestDispatcher("home.html").forward(request, response);
+            response.sendRedirect("home.html");
         }
         else{
             session.setAttribute("login", "fail");
+            response.getWriter().write("Sai tài khoản hoặc mật khẩu");
         }
     } 
 
