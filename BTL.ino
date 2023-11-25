@@ -188,11 +188,13 @@ void loop() {
         // Bật nước tự động
         if(doamdat < doam_bomtuoi){
           digitalWrite(relayBom, LOW);
+          digitalWrite(den, HIGH);
           Serial.println("Bật bơm tưới!");
         }
         else{
           if(doamdat > doam_tatbomtuoi){
             digitalWrite(relayBom, HIGH);
+            digitalWrite(den, LOW);
             Serial.println("Tắt bơm tưới!");
           }
         }
