@@ -34,14 +34,14 @@ public class ProcessLogin extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         boolean check = new SensorDAO().checkLogin(username, password);
-        HttpSession session=request.getSession();
+        // HttpSession session=request.getSession();
         if(check == true){
-            session.setAttribute("login", "success");
+            // session.setAttribute("login", "success");
 //            request.getRequestDispatcher("home.html").forward(request, response);
             response.sendRedirect("home.html");
         }
         else{
-            session.setAttribute("login", "fail");
+            // session.setAttribute("login", "fail");
             response.getWriter().write("Sai tài khoản hoặc mật khẩu");
         }
     } 
