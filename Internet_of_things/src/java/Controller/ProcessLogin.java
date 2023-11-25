@@ -36,11 +36,11 @@ public class ProcessLogin extends HttpServlet {
         HttpSession session=request.getSession();
         if(check == true){
             session.setAttribute("login", "success");
+            request.getRequestDispatcher("home.html").forward(request, response);
         }
         else{
             session.setAttribute("login", "fail");
         }
-        request.getRequestDispatcher("home.html").forward(request, response);
     } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
