@@ -1,9 +1,14 @@
+#define BLYNK_TEMPLATE_ID "TMPL6Pu1KWRaH"
+#define BLYNK_TEMPLATE_NAME "IOT"
+#define BLYNK_AUTH_TOKEN "TAQB7qJdGjVvZJffhMBcPFF7i5W8KZfC"
+
 #include <DHT.h>
 #include <Adafruit_Sensor.h>
 #include <DHT_U.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <BlynkSimpleEsp8266.h>
 
 // Khai báo thông số của cảm biến DHT11
 #define DHTPIN 4   // Chân dữ liệu của DHT11 được kết nối với chân D5 của ESP8266
@@ -28,6 +33,7 @@ int doc_cb, TBcb;
 // Thiết lập WiFi
 const char* ssid = "P302";
 const char* password = "234567890";
+char auth[] = BLYNK_AUTH_TOKEN;
 
 // Thiết lập thông tin máy chủ MQTT
 const char* mqtt_server = "192.168.32.103";  // Địa chỉ IP hoặc tên miền của máy chủ MQTT
@@ -124,14 +130,15 @@ void setup() {
   // Kết nối cảm biến DHT11
   pinMode(relayBom, OUTPUT);    //Tín hiệu xuất ra từ relay
   pinMode(relayQuat, OUTPUT);
-  // pinMode(nutnhan, INPUT_PULLUP);
   pinMode(den, OUTPUT);
-  // pinMode(nutbatquat, INPUT_PULLUP);
-  // pinMode(nutbatbom, INPUT_PULLUP);
+
   digitalWrite(relayBom, HIGH);
   digitalWrite(relayQuat,HIGH);
   digitalWrite(den, LOW);
-
+  // mới thêm vào
+  dht.begin();
+  Blynk.begin(auth, ssid, password);
+  //
   reconnect();
 }
 
@@ -145,13 +152,13 @@ void loop() {
     timer = currentTime;
 
     // Đọc ánh sáng từ cảm biến quang trở
-    for(int i=0;i<=9;i++)   /*Chúng ta sẽ tạo một hàm for để đọc 10 lần giá trị cảm biến, 
-                            sau đó lấy giá trị trung bình để được giá trị chính xác nhất.*/
-        {
-          doc_cb += analogRead(cb);     
-        }
-    TBcb=doc_cb/10;     //Tính giá trị trung bình
-
+    // for(int i=0;i<=9;i++)   /*Chúng ta sẽ tạo một hàm for để đọc 10 lần giá trị cảm biến, 
+    //                         sau đó lấy giá trị trung bình để được giá trị chính xác nhất.*/
+    //     {
+    //       doc_cb += analogRead(cb);     
+    //     }
+    // TBcb=doc_cb/10;     //Tính giá trị trung bình
+    TBcb = analogRead(cb);  
     sensors_event_t event;
     dht.temperature().getEvent(&event);
     float temperature = event.temperature;
@@ -161,15 +168,22 @@ void loop() {
     float phantramao = map(TBcb, 0, 1023, 0, 100);    //Chuyển giá trị Analog thành giá trị %
     float phantramthuc = 100 - phantramao; 
 
+    
+    if (isnan(temperature) || isnan(humidity)) {
+        Serial.println("Failed to read from DHT sensor!");
+        // return;
+    }
     // Làm tròn các độ ẩm
-    // if (isnan(temperature) || isnan(humidity)) {
-    //     Serial.println("Failed to read from DHT sensor!");
-    // }
-    // else{
       float nhietdo = round(temperature * 10) / 10.0; // Làm tròn temperature với 1 chữ số thập phân
       float doam = round(humidity * 10) / 10.0; // Làm tròn humidity với 1 chữ số thập phân
       float doamdat = round(phantramthuc * 10) / 10.0; // Làm tròn soil với 1 chữ số thập phân
       delay (1000);
+
+      // đọc lên blynk
+      Blynk.virtualWrite(V5, nhietdo);
+      Blynk.virtualWrite(V6, doam);
+      Blynk.virtualWrite(V7, doamdat);
+
 
       Serial.print("Nhiệt độ: ");
       Serial.println(temperature);
@@ -178,6 +192,7 @@ void loop() {
       Serial.print("Độ ẩm đất: ");
       Serial.println(phantramthuc);
       Serial.println("\n");
+
       // Trạng thái thủ công
       if(state == 0){
       }
